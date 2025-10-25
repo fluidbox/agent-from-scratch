@@ -1,7 +1,16 @@
-import OpenAI from 'openai'
+// Define tool call type
+export interface ToolCall {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
 
+// Define message types without relying on OpenAI imports
 export type AIMessage =
-  | OpenAI.Chat.Completions.ChatCompletionAssistantMessageParam
+  | { role: 'assistant'; content: string; tool_calls?: ToolCall[] }
   | { role: 'user'; content: string }
   | { role: 'tool'; content: string; tool_call_id: string }
 

@@ -1,15 +1,15 @@
-import type OpenAI from 'openai'
+import type { ToolCall } from '../types'
 import { generateImage } from './tools/generateImage'
 import { reddit } from './tools/reddit'
 import { dadJoke } from './tools/dadJoke'
 
 export const runTool = async (
-  toolCall: OpenAI.Chat.Completions.ChatCompletionMessageToolCall,
+  toolCall: ToolCall,
   userMessage: string
 ) => {
   const input = {
     userMessage,
-    toolArgs: JSON.parse(toolCall.function.arguments),
+    toolArgs: toolCall.function.arguments ? JSON.parse(toolCall.function.arguments) : {},
   }
   switch (toolCall.function.name) {
     case 'generate_image':

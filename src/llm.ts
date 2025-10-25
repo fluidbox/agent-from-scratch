@@ -1,11 +1,11 @@
-import { zodFunction } from 'openai/helpers/zod'
 import { z } from 'zod'
 import type { AIMessage } from '../types'
-import { openai } from './ai'
+import { BEDROCK_MODELS } from './ai'
 import { systemPrompt } from './systemPrompt'
+import { runBedrockLLM } from './bedrockLlm'
 
 export const runLLM = async ({
-  model = 'gpt-4o-mini',
+  model = BEDROCK_MODELS.CLAUDE_3_SONNET,
   messages,
   temperature = 0.1,
   tools,
@@ -15,21 +15,9 @@ export const runLLM = async ({
   model?: string
   tools?: { name: string; parameters: z.AnyZodObject }[]
 }) => {
-  const formattedTools = tools?.map((tool) => zodFunction(tool))
-  const response = await openai.chat.completions.create({
-    model,
-    messages: [
-      {
-        role: 'system',
-        content: systemPrompt,
-      },
-      ...messages,
-    ],
+  return runBedrockLLM({
+    messages,
     temperature,
-    tools: formattedTools,
-    tool_choice: 'auto',
-    parallel_tool_calls: false,
-  })
-
-  return response.choices[0].message
+    tools,
+  });
 }

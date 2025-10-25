@@ -1,6 +1,8 @@
 import type { ToolFn } from '../../types'
-import { openai } from '../ai'
 import { z } from 'zod'
+import { generateImageWithBedrock } from '../bedrockImage'
+import fs from 'fs'
+import path from 'path'
 
 export const generateImageToolDefinition = {
   name: 'generate_image',
@@ -9,7 +11,7 @@ export const generateImageToolDefinition = {
       prompt: z
         .string()
         .describe(
-          'The prompt to use to generate the image with a diffusion model image generator like Dall-E'
+          'The prompt to use to generate the image with a diffusion model image generator like Titan Image Generator'
         ),
     })
     .describe('Generates an image and returns the url of the image.'),
@@ -21,14 +23,19 @@ export const generateImage: ToolFn<Args, string> = async ({
   toolArgs,
   userMessage,
 }) => {
-  const response = await openai.images.generate({
-    model: 'dall-e-3',
-    prompt: toolArgs.prompt,
-    n: 1,
-    size: '1024x1024',
-  })
+  try {
+    // Use direct Bedrock client for image generation
+    const imageBase64 = await generateImageWithBedrock(toolArgs.prompt);
 
-  const imageUrl = response.data[0].url!
+    // Save the image to a file for viewing
+    const imgBuffer = Buffer.from(imageBase64, 'base64');
+    const outputPath = path.join(process.cwd(), 'generated-image.png');
+    fs.writeFileSync(outputPath, imgBuffer as any);
 
-  return imageUrl
+    // Return a shorter message instead of the large base64 data
+    return `Image generated successfully and saved to ${outputPath}. The image shows: ${toolArgs.prompt}`;
+  } catch (error) {
+    console.error('Error generating image:', error);
+    throw error;
+  }
 }

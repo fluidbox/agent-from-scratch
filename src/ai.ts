@@ -1,3 +1,4 @@
-import OpenAI from 'openai'
+import { bedrockClient, BEDROCK_MODELS } from './bedrock'
 
-export const openai = new OpenAI()
+// Export Bedrock client and models to be used throughout the application
+export { bedrockClient, BEDROCK_MODELS }

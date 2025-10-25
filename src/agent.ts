@@ -34,11 +34,6 @@ export const runAgent = async ({
 
     logMessage(response)
 
-    if (response.content) {
-      loader.stop()
-      return getMessages()
-    }
-
     if (response.tool_calls) {
       const toolCall = response.tool_calls[0]
       loader.update(`executing: ${toolCall.function.name}`)
@@ -47,6 +42,10 @@ export const runAgent = async ({
       await saveToolResponse(toolCall.id, toolResponse)
 
       loader.update(`executed: ${toolCall.function.name}`)
+      // Continue the loop to get the next response
+    } else if (response.content) {
+      loader.stop()
+      return getMessages()
     }
   }
 }
